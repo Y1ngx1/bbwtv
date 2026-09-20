@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BBWTV - Bloxd 起床战争赛事中心</title>
   <style>
+    /* 🌟 新增：开启平滑滚动并防止顶部导航栏遮挡 */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px; 
+    }
+
     :root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --accent: #38bdf8; --accent2: #fbbf24; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
@@ -220,6 +226,30 @@
       renderMatches();
       renderRankings();
       renderTeams();
+
+      // 🌟 新增：处理导航栏平滑跳转，避免瞬间跳跃和顶部遮挡
+      document.querySelectorAll('nav a').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault(); // 阻止默认的瞬间跳跃
+          const targetId = this.getAttribute('href').substring(1); // 获取 #news 中的 news
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            // 计算导航栏高度，防止跳转后被遮挡
+            const headerOffset = 80; 
+            const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerOffset;
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth' // 丝滑滚动
+            });
+            
+            // 更新浏览器地址栏后缀，方便分享
+            history.pushState(null, null, '#' + targetId);
+          }
+        });
+      });
     });
   </script>
 </body>
