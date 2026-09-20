@@ -5,12 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BBWTV - Bloxd 起床战争赛事</title>
   <style>
-    body { font-family: sans-serif; background: #0f172a; color: #fff; text-align: center; padding: 50px; }
+字体族: ; 背景: #0f172a; 颜色: #fff; 
     h1 { color: #38bdf8; }
+    .team-card { 背景: #1e293b; 内边距: 15px; 下外边距: 15px; 圆角半径: 8px; }
+    .team-card h3 { margin: 0 0 5px 0; color: #fbbf24; }
   </style>
 </head>
 <body>
-  <h1>BBWTV 即将上线</h1>
-  <p>Bloxd.io BedWars 赛事中心</p>
+  <h1>BBWTV 战队列表</h1>
+  <div id="team-list">加载中...</div>
+
+  <script>
+    async function loadTeams() {
+      try {
+        // 读取我们刚刚创建的 teams.json
+        const response = await fetch('./data/teams.json');
+        const teams = await response.json();
+        
+        const container = document.getElementById('team-list');
+        container.innerHTML = '';
+        
+        teams.forEach(team => {
+          const card = document.createElement('div');
+          card.className = 'team-card';
+          card.innerHTML = `
+            <h3>${team.name} [${team.tag}]</h3>
+            <p>队员: ${team.players.join(', ')}</p>
+          `;
+          容器.appendChild(卡片);
+        });
+      } catch (错误) {
+        文档.getElementById('team-list').innerText = '数据加载失败，请检查 data/teams.json';
+      }
+    }
+    loadTeams();
+  </script>
 </body>
 </html>
