@@ -3,41 +3,224 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BBWTV - Bloxd 起床战争赛事</title>
+  <title>BBWTV - Bloxd 起床战争赛事中心</title>
   <style>
-字体族: ; 背景: #0f172a; 颜色: #fff; 
-    h1 { color: #38bdf8; }
-    .团队卡片 { 背景: #1e293b; 内边距: 15px; 下外边距: 15px; 圆角半径: 8px; }
-    .team-card h3 { margin: 0 0 5px 0; color: #fbbf24; }
+    :root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --accent: #38bdf8; --accent2: #fbbf24; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    
+    /* 顶部导航 */
+    header { background: #0b1120; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 24px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-decoration: none; }
+    .logo span { color: #fff; }
+    nav a { color: var(--text); text-decoration: none; margin-left: 20px; font-weight: 500; transition: 0.2s; }
+    nav a:hover { color: var(--accent2); }
+
+    /* 主容器 */
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+
+    /* 板块标题 */
+    .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #334155; display: flex; align-items: center; }
+    .section-title::before { content: ''; display: inline-block; width: 6px; height: 18px; background: var(--accent); margin-right: 10px; border-radius: 3px; }
+
+    /* 卡片样式 */
+    .card { background: var(--card); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    
+    /* 消息列表 */
+    .news-item { border-bottom: 1px dashed #334155; padding: 12px 0; }
+    .news-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .news-date { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+    .news-title { font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+    .news-content { font-size: 14px; color: #cbd5e1; }
+
+    /* 赛程与结果 */
+    .match-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+    .match-item:last-child { border-bottom: none; }
+    .match-meta { font-size: 12px; color: #94a3b8; width: 100px; }
+    .match-teams { flex: 1; text-align: center; font-weight: 600; }
+    .match-score { font-weight: 800; font-size: 18px; color: var(--accent2); width: 80px; text-align: right; }
+    .status-upcoming { color: #10b981; font-size: 12px; background: rgba(16,185,129,0.1); padding: 2px 6px; border-radius: 4px; }
+    
+    /* 排行榜 */
+    .rank-table { width: 100%; border-collapse: collapse; }
+    .rank-table th { text-align: left; font-size: 12px; color: #94a3b8; padding: 8px; border-bottom: 1px solid #334155; }
+    .rank-table td { padding: 10px 8px; border-bottom: 1px solid #1e293b; font-size: 14px; }
+    .rank-table tr:hover { background: rgba(56, 189, 248, 0.05); }
+    .rank-1 td { color: var(--accent2); font-weight: 700; }
+    .rank-pts { text-align: right; font-weight: 700; color: #38bdf8; }
+
+    /* 战队卡片 */
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .team-card { background: #1a2332; padding: 15px; border-radius: 6px; border-left: 3px solid var(--accent); }
+    .team-card h4 { color: var(--accent2); margin-bottom: 5px; }
+    .team-card p { font-size: 13px; color: #94a3b8; }
+    
+    .error-msg { color: #ef4444; font-size: 14px; font-style: italic; }
   </style>
 </head>
 <body>
-  <h1>BBWTV 战队列表</h1>
-  <div id="team-list">加载中...</div>
+
+  <header>
+    <a href="#" class="logo">BBW<span>TV</span></a>
+    <nav>
+      <a href="#news">近期消息</a>
+      <a href="#matches">赛程</a>
+      <a href="#rankings">积分榜</a>
+      <a href="#teams">战队</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <!-- 左侧主内容 -->
+    <main>
+      <!-- 近期消息板块 -->
+      <section id="news">
+        <div class="section-title">近期消息</div>
+        <div class="card" id="news-container">
+          <div class="error-msg">暂无消息数据，请检查 data/news.json</div>
+        </div>
+      </section>
+
+      <!-- 赛程与结果板块 -->
+      <section id="matches">
+        <div class="section-title">赛程与结果</div>
+        <div class="card" id="matches-container">
+          <div class="error-msg">暂无赛程数据，请检查 data/matches.json</div>
+        </div>
+      </section>
+
+      <!-- 战队列表板块 -->
+      <section id="teams">
+        <div class="section-title">参赛战队</div>
+        <div class="team-grid" id="teams-container">
+          <div class="error-msg">暂无战队数据，请检查 data/teams.json</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 右侧边栏 -->
+    <aside>
+      <!-- 积分榜板块 -->
+      <section id="rankings">
+        <div class="section-title">Road to BBWC 积分榜</div>
+        <div class="card" id="rankings-container">
+          <div class="error-msg">暂无积分数据，请检查 data/rankings.json</div>
+        </div>
+      </section>
+      
+      <!-- 赛事介绍快捷卡片 -->
+      <section>
+        <div class="section-title">关于 BBWTV</div>
+        <div class="card" style="font-size: 14px; color: #cbd5e1;">
+          <p><strong>Bloxd.io BedWars TV</strong> 是 Bloxd 起床战争赛事的官方信息聚合平台。</p>
+          <p style="margin-top: 10px;">我们致力于提供清晰的赛程、实时的积分与战报。</p>
+        </div>
+      </section>
+    </aside>
+  </div>
 
   <script>
-    async function loadTeams() {
+    // 通用加载函数
+    async function fetchJSON(path) {
       try {
-        const response = await fetch('./data/teams.json');
-        const teams = await response.json();
-        
-        const container = document.getElementById('team-list');
-        容器.innerHTML = '';
-        
-        teams.forEach(team => {
-          const card = document.createElement('div');
-          card.className = 'team-card';
-          card.innerHTML = `
-            <h3>${team.name} [${team.tag}]</h3>
-            <p>队员: ${team.players.join(', ')}</p>
-          `;
-          容器.appendChild(卡片);
-        });
-      } catch (错误) {
-        文档.getElementById('team-list').innerText = '数据加载失败，请检查 data/teams.json';
+        const res = await fetch(path);
+        if (!res.ok) throw new Error('Network response was not ok');
+        return await res.json();
+      } catch (err) {
+        console.error('加载失败:', path, err);
+        return null; // 返回 null 以便后续处理
       }
     }
-    loadTeams();
+
+    // 1. 渲染新闻
+    async function renderNews() {
+      const data = await fetchJSON('./data/news.json');
+      const container = document.getElementById('news-container');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="error-msg">暂无近期消息</div>';
+        return;
+      }
+      container.innerHTML = data.map(item => `
+        <div class="news-item">
+          <div class="news-date">${item.date}</div>
+          <div class="news-title">${item.title}</div>
+          <div class="news-content">${item.content}</div>
+        </div>
+      `).join('');
+    }
+
+    // 2. 渲染赛程
+    async function renderMatches() {
+      const data = await fetchJSON('./data/matches.json');
+      const container = document.getElementById('matches-container');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="error-msg">暂无赛程数据</div>';
+        return;
+      }
+      container.innerHTML = data.map(m => {
+        const isUpcoming = m.status === 'upcoming';
+        const scoreDisplay = isUpcoming ? '<span class="status-upcoming">即将开始</span>' : `${m.scoreA} : ${m.scoreB}`;
+        return `
+          <div class="match-item">
+            <div class="match-meta">
+              <div>${m.date} ${m.time}</div>
+              <div style="color:var(--accent);font-size:11px;">${m.event}</div>
+            </div>
+            <div class="match-teams">${m.teamA} vs ${m.teamB}</div>
+            <div class="match-score">${scoreDisplay}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3. 渲染积分榜
+    async function renderRankings() {
+      const data = await fetchJSON('./data/rankings.json');
+      const container = document.getElementById('rankings-container');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="error-msg">暂无积分数据</div>';
+        return;
+      }
+      container.innerHTML = `
+        <table class="rank-table">
+          <thead><tr><th>#</th><th>战队</th><th>积分</th></tr></thead>
+          <tbody>
+            ${data.map(r => `
+              <tr class="${r.rank === 1 ? 'rank-1' : ''}">
+                <td>${r.rank}</td>
+                <td>${r.team} <span style="color:#64748b;font-size:11px;">[${r.tag}]</span></td>
+                <td class="rank-pts">${r.points}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // 4. 渲染战队列表
+    async function renderTeams() {
+      const data = await fetchJSON('./data/teams.json');
+      const container = document.getElementById('teams-container');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="error-msg">暂无战队数据</div>';
+        return;
+      }
+      container.innerHTML = data.map(team => `
+        <div class="team-card">
+          <h4>${team.name} [${team.tag}]</h4>
+          <p>队员: ${team.players.join(', ')}</p>
+        </div>
+      `).join('');
+    }
+
+    // 页面加载完成后执行所有渲染
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNews();
+      renderMatches();
+      renderRankings();
+      renderTeams();
+    });
   </script>
 </body>
 </html>
