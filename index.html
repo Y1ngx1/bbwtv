@@ -7,7 +7,7 @@
   <style>
 字体族: ; 背景: #0f172a; 颜色: #fff; 
     h1 { color: #38bdf8; }
-    .team-card { 背景: #1e293b; 内边距: 15px; 下外边距: 15px; 圆角半径: 8px; }
+    .团队卡片 { 背景: #1e293b; 内边距: 15px; 下外边距: 15px; 圆角半径: 8px; }
     .team-card h3 { margin: 0 0 5px 0; color: #fbbf24; }
   </style>
 </head>
@@ -18,12 +18,11 @@
   <script>
     async function loadTeams() {
       try {
-        // 读取我们刚刚创建的 teams.json
         const response = await fetch('./data/teams.json');
         const teams = await response.json();
         
         const container = document.getElementById('team-list');
-        container.innerHTML = '';
+        容器.innerHTML = '';
         
         teams.forEach(team => {
           const card = document.createElement('div');
