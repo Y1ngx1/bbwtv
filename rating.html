@@ -9,39 +9,36 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
     
-    /* 顶部导航 */
     header { background: #0b1120; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
     .logo { font-size: 24px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-decoration: none; }
     .logo span { color: #fff; }
     nav a { color: var(--text); text-decoration: none; margin-left: 20px; font-weight: 500; transition: 0.2s; }
     nav a:hover { color: var(--accent2); }
 
-    /* 页面容器 */
     .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
     
-    /* 头部信息 */
     .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
     .page-title { font-size: 24px; font-weight: 800; color: #fff; }
     .page-subtitle { font-size: 14px; color: #94a3b8; margin-top: 5px; }
+    .header-actions { display: flex; gap: 15px; align-items: center; }
     .formula-badge { background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 5px 12px; border-radius: 20px; font-size: 13px; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .reset-btn { background: #334155; color: #e2e8f0; border: none; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
+    .reset-btn:hover { background: var(--accent); color: #0f172a; }
 
-    /* 数据表格 */
     .table-wrapper { background: var(--card); border-radius: 8px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
-    th { background: #0b1120; color: #94a3b8; font-size: 12px; text-transform: uppercase; padding: 15px 15px; border-bottom: 2px solid #334155; cursor: pointer; user-select: none; }
+    th { background: #0b1120; color: #94a3b8; font-size: 12px; text-transform: uppercase; padding: 15px 15px; border-bottom: 2px solid #334155; cursor: pointer; user-select: none; transition: 0.2s; }
     th:hover { color: var(--accent); }
     td { padding: 12px 15px; border-bottom: 1px solid #1e293b; font-size: 14px; }
     tr:hover { background: rgba(56, 189, 248, 0.05); }
     
-    /* 特殊列样式 */
     .player-name { font-weight: 600; color: #fff; }
     .team-tag { font-size: 11px; color: #64748b; margin-left: 5px; }
-    .rating-value { font-weight: 800; font-size: 16px; color: var(--accent2); text-align: right; }
-    .rating-high { color: #10b981; } /* 高光数据绿色 */
-    .rating-mid { color: var(--accent2); } /* 中等数据黄色 */
-    .rating-low { color: #ef4444; } /* 拉胯数据红色 */
+    .rating-value { font-weight: 800; font-size: 16px; text-align: right; }
+    .rating-high { color: #10b981; }
+    .rating-mid { color: var(--accent2); }
+    .rating-low { color: #ef4444; }
 
-    /* 排序图标 */
     th.sort-asc::after { content: ' ▲'; font-size: 10px; color: var(--accent); }
     th.sort-desc::after { content: ' ▼'; font-size: 10px; color: var(--accent); }
   </style>
@@ -60,9 +57,12 @@
     <div class="page-header">
       <div>
         <h1 class="page-title">选手数据排行榜 (S0 - 安魂曲)</h1>
-        <div class="page-subtitle">数据截止于 2026-10-03 · 点击表头可排序</div>
+        <div class="page-subtitle">数据截止于 2026-10-03 · 点击表头切换排序，第三次点击恢复默认</div>
       </div>
-      <div class="formula-badge">BBW Rating = (K + 1.5×FK + 2.5×B) / (D + 1)</div>
+      <div class="header-actions">
+        <div class="formula-badge">BBW Rating = (K + 1.5×FK + 2.5×B) / (D + 1)</div>
+        <button class="reset-btn" id="reset-sort">恢复默认排序</button>
+      </div>
     </div>
 
     <div class="table-wrapper">
@@ -89,8 +89,9 @@
 
   <script>
     let rawData = [];
+    let currentSortKey = 'rating';
+    let currentSortOrder = 'desc';
 
-    // 1. 计算 Rating 并初始化数据
     async function initRatingPage() {
       try {
         const res = await fetch('./data/ratings.json');
@@ -101,25 +102,21 @@
           return;
         }
 
-        // 计算每个选手的 BBW Rating
         rawData = data.map(p => {
           const rating = (1.0 * p.kills + 1.5 * p.finalKills + 2.5 * p.beds) / (p.deaths + 1);
           return { ...p, rating: parseFloat(rating.toFixed(2)) };
         });
 
-        // 默认按 Rating 降序排序
-        sortData('rating', 'desc');
+        applySort('rating', 'desc');
       } catch (err) {
         console.error('加载失败:', err);
         document.getElementById('rating-body').innerHTML = '<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 30px;">数据加载失败，请检查 JSON 格式</td></tr>';
       }
     }
 
-    // 2. 渲染表格
     function renderTable(data) {
       const tbody = document.getElementById('rating-body');
       tbody.innerHTML = data.map((p, index) => {
-        // 根据 Rating 赋予不同颜色
         let ratingClass = 'rating-low';
         if (p.rating >= 1.5) ratingClass = 'rating-high';
         else if (p.rating >= 1.0) ratingClass = 'rating-mid';
@@ -140,8 +137,10 @@
       }).join('');
     }
 
-    // 3. 排序逻辑
-    function sortData(key, order) {
+    function applySort(key, order) {
+      currentSortKey = key;
+      currentSortOrder = order;
+
       const sorted = [...rawData].sort((a, b) => {
         let valA = a[key];
         let valB = b[key];
@@ -150,32 +149,45 @@
         }
         return order === 'asc' ? valA - valB : valB - valA;
       });
+
+      updateHeaderArrows(key, order);
       renderTable(sorted);
     }
 
-    // 4. 绑定表头点击排序事件
-    function bindTableSort() {
-      const headers = document.querySelectorAll('th');
-      headers.forEach(th => {
-        th.addEventListener('click', () => {
-          const key = th.getAttribute('data-key');
-          if (!key) return;
-
-          const isAsc = th.classList.contains('sort-asc');
-          const newOrder = isAsc ? 'desc' : 'asc';
-
-          headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
-          th.classList.add(newOrder === 'asc' ? 'sort-asc' : 'sort-desc');
-
-          sortData(key, newOrder);
-        });
+    function updateHeaderArrows(key, order) {
+      document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.getAttribute('data-key') === key) {
+          th.classList.add(order === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
       });
     }
 
-    // 页面加载
+    function handleHeaderClick(th) {
+      const key = th.getAttribute('data-key');
+      if (!key || key === 'rank') return;
+
+      if (key === currentSortKey) {
+        if (currentSortOrder === 'desc') {
+          applySort(key, 'asc');
+        } else if (currentSortOrder === 'asc') {
+          applySort('rating', 'desc');
+        }
+      } else {
+        applySort(key, 'desc');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       initRatingPage();
-      bindTableSort();
+
+      document.querySelectorAll('th').forEach(th => {
+        th.addEventListener('click', () => handleHeaderClick(th));
+      });
+
+      document.getElementById('reset-sort').addEventListener('click', () => {
+        applySort('rating', 'desc');
+      });
     });
   </script>
 </body>
