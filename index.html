@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BBWTV - Bloxd 起床战争赛事中心</title>
   <style>
-    /* 🌟 新增：开启平滑滚动并防止顶部导航栏遮挡 */
     html {
       scroll-behavior: smooth;
       scroll-padding-top: 80px; 
@@ -15,32 +14,26 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
     
-    /* 顶部导航 */
     header { background: #0b1120; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
     .logo { font-size: 24px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-decoration: none; }
     .logo span { color: #fff; }
     nav a { color: var(--text); text-decoration: none; margin-left: 20px; font-weight: 500; transition: 0.2s; }
     nav a:hover { color: var(--accent2); }
 
-    /* 主容器 */
     .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
     @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
 
-    /* 板块标题 */
     .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #334155; display: flex; align-items: center; }
     .section-title::before { content: ''; display: inline-block; width: 6px; height: 18px; background: var(--accent); margin-right: 10px; border-radius: 3px; }
 
-    /* 卡片样式 */
     .card { background: var(--card); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
     
-    /* 消息列表 */
     .news-item { border-bottom: 1px dashed #334155; padding: 12px 0; }
     .news-item:last-child { border-bottom: none; padding-bottom: 0; }
     .news-date { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
     .news-title { font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
     .news-content { font-size: 14px; color: #cbd5e1; }
 
-    /* 赛程与结果 */
     .match-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
     .match-item:last-child { border-bottom: none; }
     .match-meta { font-size: 12px; color: #94a3b8; width: 100px; }
@@ -48,7 +41,6 @@
     .match-score { font-weight: 800; font-size: 18px; color: var(--accent2); width: 80px; text-align: right; }
     .status-upcoming { color: #10b981; font-size: 12px; background: rgba(16,185,129,0.1); padding: 2px 6px; border-radius: 4px; }
     
-    /* 排行榜 */
     .rank-table { width: 100%; border-collapse: collapse; }
     .rank-table th { text-align: left; font-size: 12px; color: #94a3b8; padding: 8px; border-bottom: 1px solid #334155; }
     .rank-table td { padding: 10px 8px; border-bottom: 1px solid #1e293b; font-size: 14px; }
@@ -56,11 +48,17 @@
     .rank-1 td { color: var(--accent2); font-weight: 700; }
     .rank-pts { text-align: right; font-weight: 700; color: #38bdf8; }
 
-    /* 战队卡片 */
     .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
     .team-card { background: #1a2332; padding: 15px; border-radius: 6px; border-left: 3px solid var(--accent); }
     .team-card h4 { color: var(--accent2); margin-bottom: 5px; }
     .team-card p { font-size: 13px; color: #94a3b8; }
+
+    .caster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .caster-card { background: #1a2332; padding: 20px; border-radius: 8px; border-top: 3px solid var(--accent2); text-align: center; }
+    .caster-avatar { width: 80px; height: 80px; border-radius: 50%; background: #334155; margin: 0 auto 10px; border: 2px solid var(--accent); }
+    .caster-card h4 { color: var(--accent2); margin-bottom: 2px; }
+    .caster-role { font-size: 12px; color: var(--accent); background: rgba(56, 189, 248, 0.1); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+    .caster-bio { font-size: 13px; color: #94a3b8; line-height: 1.5; }
     
     .error-msg { color: #ef4444; font-size: 14px; font-style: italic; }
   </style>
@@ -68,19 +66,20 @@
 <body>
 
   <header>
-    <a href="#" class="logo">BBW<span>TV</span></a>
+    <a href="index.html" class="logo">BBW<span>TV</span></a>
     <nav>
+      <a href="index.html">首页</a>
+      <a href="rating.html">选手 Rating</a>
       <a href="#news">近期消息</a>
       <a href="#matches">赛程</a>
       <a href="#rankings">积分榜</a>
+      <a href="#casters">解说员</a>
       <a href="#teams">战队</a>
     </nav>
   </header>
 
   <div class="container">
-    <!-- 左侧主内容 -->
     <main>
-      <!-- 近期消息板块 -->
       <section id="news">
         <div class="section-title">近期消息</div>
         <div class="card" id="news-container">
@@ -88,7 +87,6 @@
         </div>
       </section>
 
-      <!-- 赛程与结果板块 -->
       <section id="matches">
         <div class="section-title">赛程与结果</div>
         <div class="card" id="matches-container">
@@ -96,7 +94,13 @@
         </div>
       </section>
 
-      <!-- 战队列表板块 -->
+      <section id="casters">
+        <div class="section-title">赛事解说团队</div>
+        <div class="caster-grid" id="casters-container">
+          <div class="error-msg">暂无解说员数据，请检查 data/casters.json</div>
+        </div>
+      </section>
+
       <section id="teams">
         <div class="section-title">参赛战队</div>
         <div class="team-grid" id="teams-container">
@@ -105,9 +109,7 @@
       </section>
     </main>
 
-    <!-- 右侧边栏 -->
     <aside>
-      <!-- 积分榜板块 -->
       <section id="rankings">
         <div class="section-title">Road to BBWC 积分榜</div>
         <div class="card" id="rankings-container">
@@ -115,7 +117,6 @@
         </div>
       </section>
       
-      <!-- 赛事介绍快捷卡片 -->
       <section>
         <div class="section-title">关于 BBWTV</div>
         <div class="card" style="font-size: 14px; color: #cbd5e1;">
@@ -127,7 +128,6 @@
   </div>
 
   <script>
-    // 通用加载函数
     async function fetchJSON(path) {
       try {
         const res = await fetch(path);
@@ -135,11 +135,10 @@
         return await res.json();
       } catch (err) {
         console.error('加载失败:', path, err);
-        return null; // 返回 null 以便后续处理
+        return null;
       }
     }
 
-    // 1. 渲染新闻
     async function renderNews() {
       const data = await fetchJSON('./data/news.json');
       const container = document.getElementById('news-container');
@@ -156,7 +155,6 @@
       `).join('');
     }
 
-    // 2. 渲染赛程
     async function renderMatches() {
       const data = await fetchJSON('./data/matches.json');
       const container = document.getElementById('matches-container');
@@ -180,7 +178,6 @@
       }).join('');
     }
 
-    // 3. 渲染积分榜
     async function renderRankings() {
       const data = await fetchJSON('./data/rankings.json');
       const container = document.getElementById('rankings-container');
@@ -204,7 +201,6 @@
       `;
     }
 
-    // 4. 渲染战队列表
     async function renderTeams() {
       const data = await fetchJSON('./data/teams.json');
       const container = document.getElementById('teams-container');
@@ -220,33 +216,49 @@
       `).join('');
     }
 
-    // 页面加载完成后执行所有渲染
+    async function renderCasters() {
+      const data = await fetchJSON('./data/casters.json');
+      const container = document.getElementById('casters-container');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="error-msg">暂无解说员数据</div>';
+        return;
+      }
+      container.innerHTML = data.map(c => `
+        <div class="caster-card">
+          <img src="${c.avatar}" class="caster-avatar" alt="${c.name}">
+          <h4>${c.name}</h4>
+          <div class="caster-role">${c.role}</div>
+          <div class="caster-bio">${c.bio}</div>
+        </div>
+      `).join('');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       renderNews();
       renderMatches();
       renderRankings();
       renderTeams();
+      renderCasters();
 
-      // 🌟 新增：处理导航栏平滑跳转，避免瞬间跳跃和顶部遮挡
       document.querySelectorAll('nav a').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
-          e.preventDefault(); // 阻止默认的瞬间跳跃
-          const targetId = this.getAttribute('href').substring(1); // 获取 #news 中的 news
-          const targetElement = document.getElementById(targetId);
-          
-          if (targetElement) {
-            // 计算导航栏高度，防止跳转后被遮挡
-            const headerOffset = 80; 
-            const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - headerOffset;
-
-            window.scrollTo({
-              top: offsetPosition,
-              behavior: 'smooth' // 丝滑滚动
-            });
+          const href = this.getAttribute('href');
+          if (href.startsWith('#')) {
+            e.preventDefault();
+            const targetId = href.substring(1);
+            const targetElement = document.getElementById(targetId);
             
-            // 更新浏览器地址栏后缀，方便分享
-            history.pushState(null, null, '#' + targetId);
+            if (targetElement) {
+              const headerOffset = 80; 
+              const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+              const offsetPosition = elementPosition - headerOffset;
+
+              window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+              });
+              history.pushState(null, null, href);
+            }
           }
         });
       });
