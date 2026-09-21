@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BBW Rating - BBWTV 赛事数据中心</title>
+  <style>
+    :root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --accent: #38bdf8; --accent2: #fbbf24; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    
+    /* 顶部导航 */
+    header { background: #0b1120; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 24px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-decoration: none; }
+    .logo span { color: #fff; }
+    nav a { color: var(--text); text-decoration: none; margin-left: 20px; font-weight: 500; transition: 0.2s; }
+    nav a:hover { color: var(--accent2); }
+
+    /* 页面容器 */
+    .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+    
+    /* 头部信息 */
+    .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+    .page-title { font-size: 24px; font-weight: 800; color: #fff; }
+    .page-subtitle { font-size: 14px; color: #94a3b8; margin-top: 5px; }
+    .formula-badge { background: rgba(56, 189, 248, 0.1); color: var(--accent); padding: 5px 12px; border-radius: 20px; font-size: 13px; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+    /* 数据表格 */
+    .table-wrapper { background: var(--card); border-radius: 8px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+    th { background: #0b1120; color: #94a3b8; font-size: 12px; text-transform: uppercase; padding: 15px 15px; border-bottom: 2px solid #334155; cursor: pointer; user-select: none; }
+    th:hover { color: var(--accent); }
+    td { padding: 12px 15px; border-bottom: 1px solid #1e293b; font-size: 14px; }
+    tr:hover { background: rgba(56, 189, 248, 0.05); }
+    
+    /* 特殊列样式 */
+    .player-name { font-weight: 600; color: #fff; }
+    .team-tag { font-size: 11px; color: #64748b; margin-left: 5px; }
+    .rating-value { font-weight: 800; font-size: 16px; color: var(--accent2); text-align: right; }
+    .rating-high { color: #10b981; } /* 高光数据绿色 */
+    .rating-mid { color: var(--accent2); } /* 中等数据黄色 */
+    .rating-low { color: #ef4444; } /* 拉胯数据红色 */
+
+    /* 排序图标 */
+    th.sort-asc::after { content: ' ▲'; font-size: 10px; color: var(--accent); }
+    th.sort-desc::after { content: ' ▼'; font-size: 10px; color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="logo">BBW<span>TV</span></a>
+    <nav>
+      <a href="index.html">首页</a>
+      <a href="rating.html" style="color: var(--accent2); font-weight: 700;">选手 Rating</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">选手数据排行榜 (S0 - 安魂曲)</h1>
+        <div class="page-subtitle">数据截止于 2026-10-03 · 点击表头可排序</div>
+      </div>
+      <div class="formula-badge">BBW Rating = (K + 1.5×FK + 2.5×B) / (D + 1)</div>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="rating-table">
+        <thead>
+          <tr>
+            <th data-key="rank" class="sort-desc">#</th>
+            <th data-key="player">选手</th>
+            <th data-key="team">战队</th>
+            <th data-key="matches">场次</th>
+            <th data-key="kills">击杀 (K)</th>
+            <th data-key="finalKills">终杀 (FK)</th>
+            <th data-key="beds">拆床 (B)</th>
+            <th data-key="deaths">死亡 (D)</th>
+            <th data-key="rating" style="text-align: right;">BBW Rating</th>
+          </tr>
+        </thead>
+        <tbody id="rating-body">
+          <tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 30px;">加载数据中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let rawData = [];
+
+    // 1. 计算 Rating 并初始化数据
+    async function initRatingPage() {
+      try {
+        const res = await fetch('./data/ratings.json');
+        const data = await res.json();
+        
+        if (!data || data.length === 0) {
+          document.getElementById('rating-body').innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 30px;">暂无数据</td></tr>';
+          return;
+        }
+
+        // 计算每个选手的 BBW Rating
+        rawData = data.map(p => {
+          const rating = (1.0 * p.kills + 1.5 * p.finalKills + 2.5 * p.beds) / (p.deaths + 1);
+          return { ...p, rating: parseFloat(rating.toFixed(2)) };
+        });
+
+        // 默认按 Rating 降序排序
+        sortData('rating', 'desc');
+      } catch (err) {
+        console.error('加载失败:', err);
+        document.getElementById('rating-body').innerHTML = '<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 30px;">数据加载失败，请检查 JSON 格式</td></tr>';
+      }
+    }
+
+    // 2. 渲染表格
+    function renderTable(data) {
+      const tbody = document.getElementById('rating-body');
+      tbody.innerHTML = data.map((p, index) => {
+        // 根据 Rating 赋予不同颜色
+        let ratingClass = 'rating-low';
+        if (p.rating >= 1.5) ratingClass = 'rating-high';
+        else if (p.rating >= 1.0) ratingClass = 'rating-mid';
+
+        return `
+          <tr>
+            <td><span style="color: ${index === 0 ? 'var(--accent2)' : '#94a3b8'}; font-weight: ${index === 0 ? '800' : 'normal'};">${index + 1}</span></td>
+            <td class="player-name">${p.player}</td>
+            <td>${p.team} <span class="team-tag">[${p.tag}]</span></td>
+            <td>${p.matches}</td>
+            <td>${p.kills}</td>
+            <td>${p.finalKills}</td>
+            <td>${p.beds}</td>
+            <td>${p.deaths}</td>
+            <td class="rating-value ${ratingClass}">${p.rating.toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 3. 排序逻辑
+    function sortData(key, order) {
+      const sorted = [...rawData].sort((a, b) => {
+        let valA = a[key];
+        let valB = b[key];
+        if (typeof valA === 'string') {
+          return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        return order === 'asc' ? valA - valB : valB - valA;
+      });
+      renderTable(sorted);
+    }
+
+    // 4. 绑定表头点击排序事件
+    function bindTableSort() {
+      const headers = document.querySelectorAll('th');
+      headers.forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.getAttribute('data-key');
+          if (!key) return;
+
+          const isAsc = th.classList.contains('sort-asc');
+          const newOrder = isAsc ? 'desc' : 'asc';
+
+          headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+          th.classList.add(newOrder === 'asc' ? 'sort-asc' : 'sort-desc');
+
+          sortData(key, newOrder);
+        });
+      });
+    }
+
+    // 页面加载
+    document.addEventListener('DOMContentLoaded', () => {
+      initRatingPage();
+      bindTableSort();
+    });
+  </script>
+</body>
+</html>
